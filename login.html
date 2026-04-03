@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Lost & Found</title>
+  <meta name="description" content="Login to your Lost & Found investigator account.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div id="stickers-container" aria-hidden="true"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <main class="content-wrapper">
+    <div class="glass-card">
+      <div class="card-inner">
+        <h1 class="main-heading">Lost it? Let’s find it.</h1>
+        <p class="sub-heading">Provide your credentials to proceed.</p>
+
+        <form id="login-form" class="auth-form">
+          <div class="input-group">
+            <label for="username">username </label>
+            <input type="text" id="username" required placeholder="admin">
+          </div>
+          <div class="input-group">
+            <label for="password">Passcode</label>
+            <input type="password" id="password" required placeholder="password">
+          </div>
+          <div id="error-message" class="error-msg"></div>
+
+          <button type="submit" class="login-btn action-btn">
+            <span class="btn-text">Authenticate</span>
+            <span class="btn-icon">🗝️</span>
+          </button>
+
+          <div class="form-footer">
+            <a href="#" class="forgot-link">Lost your passcode?</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Mock Authentication Logic
+    const loginForm = document.getElementById('login-form');
+    const errorMsg = document.getElementById('error-message');
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+
+      // Secure local database check
+      const VALID_USERS = {
+        'Tejaswini': '2005',
+        'Karikalan': '1975',
+        'Revathi': '1982',
+        'Mirunalini': '2007'
+      };
+
+      if (VALID_USERS[user] && VALID_USERS[user] === pass) {
+        errorMsg.textContent = '';
+        errorMsg.style.opacity = 0;
+
+        // Successful login, store securely
+        localStorage.setItem('laf_currentUser', user);
+        window.location.href = 'dashboard.html';
+      } else {
+        // Failed login
+        errorMsg.style.opacity = 1;
+        errorMsg.textContent = 'Invalid credentials. Access denied.';
+
+        // Add a small shake animation to the form on error
+        loginForm.style.transform = 'translateX(5px)';
+        setTimeout(() => loginForm.style.transform = 'translateX(-5px)', 100);
+        setTimeout(() => loginForm.style.transform = 'translateX(5px)', 200);
+        setTimeout(() => loginForm.style.transform = 'translateX(0)', 300);
+      }
+    });
+
+    // Background Sticker Animation (Shared with index.html)
+    const emojis = ["🔎", "🕵️", "👣", "📜", "🗺️", "💼", "🕰️", "🗝️"];
+    const container = document.getElementById("stickers-container");
+    const SWARM_SIZE = 40;
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < SWARM_SIZE; i++) {
+      const el = document.createElement("div");
+      el.classList.add("sticker");
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+      el.style.left = `${Math.random() * 100}vw`;
+      el.style.top = `${Math.random() * 100}vh`;
+
+      const dur = 40 + Math.random() * 40;
+      const delay = -1 * (Math.random() * 40);
+
+      el.style.animation = `drift ${dur}s ease-in-out ${delay}s infinite alternate`;
+
+      const scale = 0.5 + Math.random() * 1.5;
+      el.style.setProperty('--scale-val', scale);
+      el.style.transform = `scale(${scale})`;
+      el.style.opacity = 0.05 + Math.random() * 0.1;
+
+      fragment.appendChild(el);
+    }
+
+    container.appendChild(fragment);
+  </script>
+</body>
+
+</html>

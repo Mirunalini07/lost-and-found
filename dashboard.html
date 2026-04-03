@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Lost & Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dashboard-body">
+
+  <div class="noise-overlay" aria-hidden="true" style="position: fixed;"></div>
+  <div id="stickers-container" aria-hidden="true" style="position: fixed;"></div>
+
+  <!-- Dashboard Navbar -->
+  <header class="dash-header" style="align-items: center;">
+
+    <!-- Top Left -->
+    <div class="header-left" style="display: flex; flex-direction: column; gap: 0.25rem;">
+      <div class="brand">Lost & Found</div>
+      <div class="account-icon" id="account-btn"
+        style="cursor: pointer; display: flex; align-items: center; gap: 0.8rem; color: var(--text-main); margin-top: 0.2rem; transition: transform 0.2s;"
+        title="View Profile">
+        <span style="font-size: 1.5rem; color: var(--text-muted);">👤</span>
+        <div
+          style="display: flex; flex-direction: column; border-left: 2px solid var(--text-muted); padding-left: 0.6rem;">
+          <span
+            style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); opacity: 0.8;">Active
+            Agent</span>
+          <span id="header-username-display"
+            style="font-size: 1.15rem; line-height: 1.1; font-weight: bold; border-bottom: 1px dashed var(--text-muted);">Alice</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Center -->
+    <div class="header-center" style="flex-grow: 1; display: flex; justify-content: center;">
+      <!-- Notification Bar (Interactive) -->
+      <div id="top-notif-bar"
+        style="width: 350px; height: 40px; background: rgba(0,0,0,0.03); border: 1px solid var(--card-border); border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 1rem; color: var(--text-muted); transition: all 0.3s;">
+        <span style="opacity: 0.7;">🔔 No new notifications</span>
+      </div>
+      <!-- Cloud Status Indicator -->
+      <div id="cloud-status"
+        style="margin-left: 1rem; font-size: 0.7rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); opacity: 0.8;">
+        <div
+          style="width: 8px; height: 8px; border-radius: 50%; background: #db6a6a; border: 1px solid rgba(0,0,0,0.1);">
+        </div>
+        Cloud: Connecting...
+      </div>
+    </div>
+
+    <!-- Top Right -->
+    <div class="header-right user-actions">
+      <div class="dropdown-wrapper">
+        <button class="login-btn small-btn" id="report-menu-btn">Report &#9662;</button>
+        <div id="report-dropdown-menu" class="dropdown-menu">
+          <button id="btn-report-lost" class="dropdown-item">Report Lost</button>
+          <button id="btn-report-found" class="dropdown-item">Report Found</button>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="logout()" aria-label="Logout" title="Logout">🚪</button>
+    </div>
+  </header>
+
+
+
+  <!-- Dashboard Content -->
+  <main class="dash-main">
+    <section class="feed-section">
+      <div class="feed-header">
+        <h2 class="sub-heading" style="margin-bottom: 0; color: var(--text-main);">Active Cases</h2>
+        <div class="filters">
+          <button class="filter-tab active" onclick="renderFeed('all')">All Cases</button>
+          <button class="filter-tab" onclick="renderFeed('lost')">Lost Items</button>
+          <button class="filter-tab" onclick="renderFeed('found')">Found Items</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Grid -->
+      <div class="grid-container" id="cases-grid"></div>
+
+      <!-- Empty State -->
+      <div id="empty-state"
+        style="display: none; text-align: center; padding: 4rem; color: var(--text-muted); font-size: 1.25rem; font-style: italic;">
+        No items reported yet
+      </div>
+    </section>
+  </main>
+
+  <!-- Unified Report Modal Form -->
+  <div id="report-modal" class="modal-backdrop">
+    <div class="glass-card modal-card" style="padding: 2rem;">
+      <button class="close-btn" onclick="closeModal('report-modal')" aria-label="Close form">✖</button>
+      <h2 class="main-heading" id="modal-title" style="font-size: 2rem; margin-bottom: 1.5rem;">Report Item</h2>
+
+      <form id="report-form" class="auth-form" style="margin-top: 0; gap: 1rem;">
+
+        <div class="radio-group" style="pointer-events: none; opacity: 0.8;">
+          <label class="radio-label">
+            <input type="radio" name="reportType" value="lost"> I Lost Something
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="reportType" value="found"> I Found Something
+          </label>
+        </div>
+
+        <div class="input-group">
+          <label>Item Name</label>
+          <input type="text" id="f-name" required placeholder="e.g., Black Leather Wallet">
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="input-group" style="flex: 1;">
+            <label>Category</label>
+            <select id="f-category" required
+              style="font-family: inherit; font-size: 1rem; padding: 0.8rem; background: rgba(0,0,0, 0.03); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); outline: none;">
+              <option value="Wallet">Wallet</option>
+              <option value="Phone">Phone</option>
+              <option value="Charger">Charger</option>
+              <option value="Book">Book</option>
+              <option value="ID Card">ID Card</option>
+              <option value="Bag">Bag</option>
+              <option value="Gadget">Gadget</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Colour</label>
+            <input type="text" id="f-color" required placeholder="e.g., Red, Black">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label id="label-place">Place (General Location)</label>
+          <input type="text" id="f-place" required placeholder="e.g., Central Park, Starbucks">
+        </div>
+
+        <div class="input-group">
+          <label id="label-time">Time (Optional)</label>
+          <input type="time" id="f-time"
+            style="font-family: inherit; padding: 0.8rem; background: rgba(0,0,0,0.03); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+        </div>
+
+        <div class="input-group">
+          <label>Specific Info</label>
+          <textarea id="f-specific" rows="2" required
+            placeholder="Brief description to help others identify it..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>Unique Info <span style="font-size:0.85rem; opacity:0.7;">(Stored securely, never
+              displayed)</span></label>
+          <textarea id="f-unique" rows="2" required placeholder="Serial numbers, hidden marks..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>Upload Image (Optional)</label>
+          <input type="file" accept="image/*" style="padding: 0.5rem; background: transparent; cursor: pointer;">
+        </div>
+
+        <button type="submit" class="login-btn action-btn" style="margin-top: 1rem;">
+          <span class="btn-text">Submit Record</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Verification Claim Modal -->
+  <div id="verify-modal" class="modal-backdrop">
+    <div class="glass-card modal-card" style="padding: 2.5rem; max-width: 450px;">
+      <button class="close-btn" onclick="closeModal('verify-modal')" aria-label="Close form">✖</button>
+      <h2 class="main-heading" style="font-size: 1.8rem; margin-bottom: 0.5rem;" id="v-title">Verify Item</h2>
+      <p class="sub-heading" style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-main);">To contact the
+        poster, please verify distinguishing features to prove ownership/knowledge.</p>
+
+      <form id="verify-form" class="auth-form" style="margin-top: 0; gap: 1rem;">
+        <input type="hidden" id="v-caseId">
+
+        <div class="input-group">
+          <label>Verify the exact Colour</label>
+          <input type="text" id="v-color" required placeholder="What color is it?">
+        </div>
+
+        <div class="input-group">
+          <label>Verify Unique Identification</label>
+          <textarea id="v-unique" rows="2" required
+            placeholder="Identify a serial number, distinct scratch, or internal contents..."></textarea>
+        </div>
+
+        <button type="submit" class="login-btn action-btn" style="margin-top: 1rem;">
+          <span class="btn-text">Submit to Poster</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notif-modal" class="modal-backdrop">
+    <div class="glass-card modal-card" style="padding: 2.5rem; max-width: 500px;">
+      <button class="close-btn" onclick="closeModal('notif-modal')" aria-label="Close">✖</button>
+      <h2 class="main-heading" style="font-size: 1.8rem; margin-bottom: 1.5rem;">Verification Requests</h2>
+
+      <div id="notif-list"
+        style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+        <!-- Dynamically injected requests -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Details Viewer Modal for Poster -->
+  <div id="details-modal" class="modal-backdrop">
+    <div class="glass-card modal-card" style="padding: 2.5rem; max-width: 450px; text-align: left;">
+      <button class="close-btn" onclick="closeModal('details-modal')" aria-label="Close form">✖</button>
+      <h2 class="main-heading" style="font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">Case File</h2>
+      <div id="full-details-content" style="font-size: 1.05rem; line-height: 1.6; color: var(--text-main);"></div>
+    </div>
+  </div>
+
+  <!-- Secure Chat Modal -->
+  <div id="chat-modal" class="modal-backdrop">
+    <div class="glass-card modal-card"
+      style="padding: 0; max-width: 450px; overflow: hidden; display: flex; flex-direction: column; height: 500px;">
+
+      <!-- Header -->
+      <div
+        style="background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--card-border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="text-align: left;">
+          <h2 class="main-heading" style="font-size: 1.5rem; margin: 0;">Secure Comms</h2>
+          <span style="font-size: 0.85rem; color: var(--text-main);" id="chat-target-user"></span>
+        </div>
+        <button class="close-btn" style="position: static;" onclick="closeModal('chat-modal')"
+          aria-label="Close form">✖</button>
+      </div>
+
+      <!-- History -->
+      <div id="chat-history"
+        style="flex: 1; padding: 1rem; overflow-y: auto; background: rgba(255,255,255,0.4); display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+        <!-- Bubbles -->
+      </div>
+
+      <!-- Input -->
+      <div style="padding: 1rem; background: var(--card-bg); border-top: 1px solid var(--card-border);">
+        <form id="chat-form" style="display: flex; gap: 0.5rem;">
+          <input type="hidden" id="c-claimId">
+          <input type="text" id="c-input" required autocomplete="off" placeholder="Type a message..."
+            style="flex: 1; padding: 0.8rem; border-radius: 20px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.03); outline: none;">
+          <button type="submit"
+            style="padding: 0.8rem 1.2rem; border-radius: 20px; border: none; background: #544b3c; color: white; cursor: pointer; font-family: inherit;">Send</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- Account Profile Modal -->
+  <div id="account-modal" class="modal-backdrop">
+    <div class="glass-card modal-card" style="padding: 2.5rem; max-width: 450px;">
+      <button class="close-btn" onclick="closeModal('account-modal')" aria-label="Close form">✖</button>
+      <h2 class="main-heading" style="font-size: 2rem; margin-bottom: 0.5rem;">Profile</h2>
+      <p class="sub-heading" style="margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-main);">Logged in as:
+        <strong id="profile-username-tag">Alice</strong>
+      </p>
+      <h3
+        style="margin-bottom: 1rem; font-size: 1.15rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; color: var(--text-muted);">
+        Your Activities</h3>
+      <div id="activities-list"
+        style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; text-align: left;">
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2eR0yHrUwSmBJzimDyTb-_464_v-A1No",
+      authDomain: "lost-n-found-89160.firebaseapp.com",
+      projectId: "lost-n-found-89160",
+      storageBucket: "lost-n-found-89160.firebasestorage.app",
+      messagingSenderId: "604851619255",
+      appId: "1:604851619255:web:b27e197e9bd62a63761432",
+      measurementId: "G-LF8535CS30"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- Authentication & Data ---
+    let currentUser = localStorage.getItem('laf_currentUser');
+    if (!currentUser) {
+      window.location.href = 'login.html'; // Redirect unauthenticated users
+    }
+    document.getElementById('header-username-display').textContent = currentUser;
+
+    let cases = [];
+    let claims = [];
+    let chats = [];
+
+    // --- Logout Logic ---
+    window.logout = function () {
+      localStorage.removeItem('laf_currentUser');
+      window.location.href = 'index.html';
+    };
+
+    window.logout = function () {
+      localStorage.removeItem('laf_currentUser');
+      window.location.href = 'index.html';
+    };
+
+    // --- Utility Modal functions ---
+    function openModal(id) { document.getElementById(id).classList.add('show-modal'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show-modal'); }
+    document.querySelectorAll('.modal-backdrop').forEach(m => {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) m.classList.remove('show-modal');
+      });
+    });
+
+    const grid = document.getElementById('cases-grid');
+    const emptyState = document.getElementById('empty-state');
+    const dropdownBtn = document.getElementById('report-menu-btn');
+    const dropdownMenu = document.getElementById('report-dropdown-menu');
+    const reportForm = document.getElementById('report-form');
+    const verifyForm = document.getElementById('verify-form');
+
+    // --- Delete Case Logic ---
+    window.deleteCase = function (caseId) {
+      if (confirm('Are you sure you want to permanently delete this complaint?')) {
+        db.collection('cases').doc(String(caseId)).delete()
+          .then(() => console.log("Case deleted from cloud"))
+          .catch(err => console.error("Delete error:", err));
+      }
+    };
+
+    // --- Dropdown Interactions ---
+    dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+    window.addEventListener('click', () => dropdownMenu.classList.remove('show'));
+
+    // --- Notifications & Approval Logic ---
+    function updateNotificationBar() {
+      const myCasesStr = cases.filter(c => c.ownerId === currentUser).map(c => String(c.id));
+      const pendingRequests = claims.filter(cl => myCasesStr.includes(String(cl.caseId)) && cl.status === 'pending');
+      const newlyApproved = claims.filter(cl => cl.claimantId === currentUser && cl.status === 'approved' && !cl.claimantNotified);
+
+      const claimsInvolvingMe = claims.filter(cl => cl.claimantId === currentUser || myCasesStr.includes(String(cl.caseId))).map(cl => String(cl.id));
+      const unreadMsgs = chats.filter(m => claimsInvolvingMe.includes(String(m.claimId)) && m.senderId !== currentUser && !m.read);
+
+      const totalNotifs = pendingRequests.length + newlyApproved.length + unreadMsgs.length;
+      const notifBar = document.getElementById('top-notif-bar');
+
+      if (totalNotifs > 0) {
+        let msg = `🔔 ${totalNotifs} Notification(s)`;
+        if (pendingRequests.length === totalNotifs) msg = `🔔 ${pendingRequests.length} Verification Request(s)`;
+        if (newlyApproved.length === totalNotifs) msg = `🔔 ${newlyApproved.length} Match Approved!`;
+        if (unreadMsgs.length === totalNotifs) msg = `🔔 ${unreadMsgs.length} New Message(s)`;
+
+        notifBar.innerHTML = `<span style="font-weight: bold;">${msg}</span>`;
+        notifBar.style.color = 'var(--bg-color-top)';
+        notifBar.style.background = 'var(--text-main)';
+        notifBar.style.cursor = 'pointer';
+        notifBar.onclick = openNotifModal;
+      } else {
+        notifBar.innerHTML = `<span style="opacity: 0.7;">🔔 No new notifications</span>`;
+        notifBar.style.color = 'var(--text-muted)';
+        notifBar.style.background = 'rgba(0,0,0,0.03)';
+        notifBar.style.cursor = 'default';
+        notifBar.onclick = null;
+      }
+    }
+
+    function openNotifModal() {
+      const list = document.getElementById('notif-list');
+      list.innerHTML = '';
+
+      const myCasesStr = cases.filter(c => c.ownerId === currentUser).map(c => String(c.id));
+      const pendingRequests = claims.filter(cl => myCasesStr.includes(String(cl.caseId)) && cl.status === 'pending');
+      const newlyApproved = claims.filter(cl => cl.claimantId === currentUser && cl.status === 'approved' && !cl.claimantNotified);
+
+      const claimsInvolvingMe = claims.filter(cl => cl.claimantId === currentUser || myCasesStr.includes(String(cl.caseId))).map(cl => String(cl.id));
+      const unreadMsgs = chats.filter(m => claimsInvolvingMe.includes(String(m.claimId)) && m.senderId !== currentUser && !m.read);
+
+      if (pendingRequests.length === 0 && newlyApproved.length === 0 && unreadMsgs.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">No active notifications.</p>';
+        return;
+      }
+
+      // Pending Requests (For Posters)
+      pendingRequests.forEach(claim => {
+        const targetCase = cases.find(c => c.id == claim.caseId);
+        if (!targetCase) return;
+        const div = document.createElement('div');
+        div.style.border = '1px solid var(--card-border)';
+        div.style.padding = '1rem';
+        div.style.borderRadius = '8px';
+        div.style.background = 'rgba(255,255,255,0.4)';
+        div.innerHTML = `
+          <div style="font-size: 0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Regarding your post:</div>
+          <strong style="color:var(--text-main); font-size:1.1rem;">${targetCase.name}</strong>
+          <p style="margin: 0.8rem 0; font-size: 0.95rem; color: var(--text-main);">
+            <strong>User ${claim.claimantId} claims it. They answered:</strong><br>
+            <span style="color:var(--text-muted);">Colour:</span> ${claim.color} <br>
+            <span style="color:var(--text-muted);">Unique:</span> ${claim.uniqueInfo}
+          </p>
+          <div style="display:flex; gap:0.5rem;">
+            <button onclick="handleClaim(${claim.id}, 'approved')" style="flex:1; padding:0.6rem; background:#6eb571; color:#fff; border:none; border-radius:6px; cursor:pointer;">Approve Match</button>
+            <button onclick="handleClaim(${claim.id}, 'denied')" style="flex:1; padding:0.6rem; background:#db6a6a; color:#fff; border:none; border-radius:6px; cursor:pointer;">Deny</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      // Approved Matches (For Claimants)
+      newlyApproved.forEach(claim => {
+        const targetCase = cases.find(c => c.id == claim.caseId);
+        if (!targetCase) return;
+        const div = document.createElement('div');
+        div.style.border = '1px solid #6eb571';
+        div.style.padding = '1rem';
+        div.style.borderRadius = '8px';
+        div.style.background = 'rgba(110, 181, 113, 0.1)';
+        div.innerHTML = `
+          <strong style="color:#6eb571; font-size:1.1rem;">✅ Match Approved!</strong>
+          <p style="margin: 0.5rem 0; font-size: 0.95rem; color: var(--text-main);">
+            Your claim for <strong>${targetCase.name}</strong> was accepted by the poster.
+          </p>
+          <div style="display:flex; gap:0.5rem; margin-top: 0.8rem;">
+            <button onclick="window.ackApproval(${claim.id})" style="flex:1; padding:0.5rem; background:#544b3c; color:#fff; border:none; border-radius:6px; cursor:pointer;">Acknowledge</button>
+            <button onclick="window.ackApprovalAndChat(${claim.id})" style="flex:1; padding:0.5rem; background:#6eb571; color:#fff; border:none; border-radius:6px; cursor:pointer;">Open Chat</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      // Unread Messages (For Both)
+      const unreadChatClaimIds = [...new Set(unreadMsgs.map(m => String(m.claimId)))];
+      unreadChatClaimIds.forEach(claimId => {
+        const matchingClaim = claims.find(cl => String(cl.id) === claimId);
+        if (!matchingClaim) return;
+        const targetCase = cases.find(c => c.id == matchingClaim.caseId);
+        if (!targetCase) return;
+        const count = unreadMsgs.filter(m => String(m.claimId) === claimId).length;
+        const sendingUser = unreadMsgs.find(m => String(m.claimId) === claimId).senderId;
+
+        const div = document.createElement('div');
+        div.style.border = '1px solid var(--card-border)';
+        div.style.padding = '1rem';
+        div.style.borderRadius = '8px';
+        div.style.background = 'rgba(255, 255, 255, 0.4)';
+        div.innerHTML = `
+          <strong style="color:var(--text-main); font-size:1.1rem;">💬 New Message(s)</strong>
+          <p style="margin: 0.5rem 0; font-size: 0.95rem; color: var(--text-main);">
+            You have <strong>${count}</strong> unread message(s) from User ${sendingUser} regarding <strong>${targetCase.name}</strong>.
+          </p>
+          <div style="display:flex; gap:0.5rem; margin-top: 0.8rem;">
+            <button onclick="window.openChatFromNotif(${claimId})" style="flex:1; padding:0.5rem; background:#544b3c; color:#fff; border:none; border-radius:6px; cursor:pointer;">Read & Reply</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      openModal('notif-modal');
+    }
+
+    window.ackApproval = function (claimId) {
+      db.collection('claims').doc(String(claimId)).update({ claimantNotified: true })
+        .then(() => openNotifModal())
+        .catch(err => console.error("Update error:", err));
+    };
+
+    window.ackApprovalAndChat = function (claimId) {
+      window.ackApproval(claimId);
+      closeModal('notif-modal');
+      window.openChat(claimId);
+    };
+
+    window.openChatFromNotif = function (claimId) {
+      closeModal('notif-modal');
+      window.openChat(claimId);
+    };
+
+    window.handleClaim = function (claimId, newStatus) {
+      const claim = claims.find(c => c.id === claimId);
+      if (claim) {
+        let updates = { status: newStatus };
+        if (newStatus === 'approved') updates.claimantNotified = false;
+
+        db.collection('claims').doc(String(claimId)).update(updates);
+
+        if (newStatus === 'approved') {
+          db.collection('cases').doc(String(claim.caseId)).update({
+            status: 'matched',
+            matchedClaimId: claimId
+          });
+          alert("Match Approved! Secure Chat has been opened to arrange handoff.");
+        } else {
+          alert("Verification Failed. The request has been denied.");
+        }
+        openNotifModal();
+      }
+    };
+
+    // --- Report Modal Logic ---
+    function openReport(type) {
+      document.querySelector(`input[name="reportType"][value="${type}"]`).checked = true;
+      const title = document.getElementById('modal-title');
+      const lPlace = document.getElementById('label-place');
+      const lTime = document.getElementById('label-time');
+
+      if (type === 'lost') {
+        title.textContent = 'Report Lost Item';
+        lPlace.textContent = 'Lost Place (General Location)';
+        lTime.textContent = 'Lost Time (Optional)';
+      } else {
+        title.textContent = 'Report Found Item';
+        lPlace.textContent = 'Found Place (General Location)';
+        lTime.textContent = 'Found Time (Optional)';
+      }
+      openModal('report-modal');
+    }
+
+    document.getElementById('btn-report-lost').addEventListener('click', () => openReport('lost'));
+    document.getElementById('btn-report-found').addEventListener('click', () => openReport('found'));
+
+    reportForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const typeSel = document.querySelector('input[name="reportType"]:checked').value;
+      const newCase = {
+        id: Date.now(),
+        ownerId: currentUser,
+        status: 'open',
+        matchedClaimId: null,
+        type: typeSel,
+        name: document.getElementById('f-name').value,
+        category: document.getElementById('f-category').value,
+        color: document.getElementById('f-color').value,
+        place: document.getElementById('f-place').value,
+        time: document.getElementById('f-time').value,
+        specificInfo: document.getElementById('f-specific').value,
+        uniqueInfo: document.getElementById('f-unique').value,
+        dateAdded: new Date().toLocaleDateString()
+      };
+
+      db.collection('cases').doc(String(newCase.id)).set(newCase).then(() => {
+        reportForm.reset();
+        closeModal('report-modal');
+      }).catch(err => alert("Error saving report: " + err));
+    });
+
+    // --- View Full Details & Verification Modal ---
+    window.viewFullDetails = function (caseId) {
+      const c = cases.find(x => x.id === caseId);
+      if (!c) return;
+      document.getElementById('full-details-content').innerHTML = `
+        <strong>Category:</strong> ${c.category}<br>
+        <strong>Reported By:</strong> ${c.ownerId}<br>
+        <strong>General Area:</strong> ${c.place}<br>
+        <strong>Time:</strong> ${c.time || 'N/A'}<br>
+        <strong>Color:</strong> ${c.color}<br>
+        <strong>Specific Info:</strong> ${c.specificInfo}<br><br>
+        <span style="padding: 10px; background: rgba(0,0,0,0.05); border: 1px dashed var(--card-border); border-radius: 4px; display: block;">
+          <strong>🔐 Hidden Unique ID:</strong><br>${c.uniqueInfo}
+        </span>
+      `;
+      openModal('details-modal');
+    }
+
+    window.openVerify = function (id, caseType) {
+      document.getElementById('v-caseId').value = id;
+      document.getElementById('v-title').textContent = (caseType === 'lost') ? "I Found This" : "That's Mine";
+      openModal('verify-modal');
+    };
+
+    verifyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const claim = {
+        id: Date.now(),
+        caseId: document.getElementById('v-caseId').value,
+        claimantId: currentUser,
+        color: document.getElementById('v-color').value,
+        uniqueInfo: document.getElementById('v-unique').value,
+        status: 'pending',
+        handedOver: false,
+        received: false
+      };
+      db.collection('claims').doc(String(claim.id)).set(claim).then(() => {
+        verifyForm.reset();
+        closeModal('verify-modal');
+        alert('Verification request securely submitted to the poster via cloud!');
+      }).catch(err => alert("Error sending verification: " + err));
+    });
+
+    // --- Secure Chat Logic ---
+    window.openChat = function (claimId) {
+      document.getElementById('c-claimId').value = claimId;
+
+      const claim = claims.find(c => c.id === claimId);
+      const caseObj = cases.find(c => c.id == claim.caseId);
+      const targetUser = (currentUser === caseObj.ownerId) ? claim.claimantId : caseObj.ownerId;
+
+      document.getElementById('chat-target-user').textContent = `Chatting with: User ${targetUser}`;
+
+      renderChatBox(claimId);
+      openModal('chat-modal');
+    };
+
+    window.renderChatBox = function (claimId) {
+      chats.forEach(m => {
+        if (m.claimId == claimId && m.senderId !== currentUser && !m.read) {
+          db.collection('chats').doc(String(m.id)).update({ read: true });
+        }
+      });
+
+      const history = document.getElementById('chat-history');
+      history.innerHTML = '';
+      const msgs = chats.filter(m => m.claimId == claimId);
+
+      if (msgs.length === 0) {
+        history.innerHTML = '<div style="text-align:center; font-style:italic; color:var(--text-muted); margin-top:2rem;">Secure connection established.<br>Message to arrange standard handover point.</div>';
+      } else {
+        msgs.forEach(m => {
+          const isMe = m.senderId === currentUser;
+          const align = isMe ? 'flex-end' : 'flex-start';
+          const bg = isMe ? '#544b3c' : 'white';
+          const col = isMe ? 'white' : 'var(--text-main)';
+          const border = isMe ? 'none' : '1px solid var(--card-border)';
+
+          history.innerHTML += `
+             <div style="align-self: ${align}; max-width: 80%; padding: 0.6rem 1rem; border-radius: 15px; background: ${bg}; color: ${col}; border: ${border}; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.95rem;">
+                <div style="font-size: 0.7rem; opacity:0.7; margin-bottom: 0.2rem; text-align: ${isMe ? 'right' : 'left'};">${m.senderId}</div>
+                ${m.text}
+             </div>
+           `;
+        });
+        history.scrollTop = history.scrollHeight;
+      }
+    };
+
+    document.getElementById('chat-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('c-input');
+      const claimId = document.getElementById('c-claimId').value;
+      if (!input.value.trim()) return;
+
+      const newMsg = {
+        id: Date.now(),
+        claimId: claimId,
+        senderId: currentUser,
+        text: input.value.trim(),
+        read: false
+      };
+      db.collection('chats').doc(String(newMsg.id)).set(newMsg);
+
+      input.value = '';
+    });
+
+    // --- Handover Handshake Logic ---
+    window.confirmReceived = function (claimId) {
+      db.collection('claims').doc(String(claimId)).update({ received: true })
+        .then(() => checkArchivedStatus(claimId));
+    };
+
+    window.confirmHandedOver = function (claimId) {
+      db.collection('claims').doc(String(claimId)).update({ handedOver: true })
+        .then(() => checkArchivedStatus(claimId));
+    };
+
+    function checkArchivedStatus(claimId) {
+      setTimeout(() => {
+        const claim = claims.find(c => c.id === claimId);
+        if (claim && claim.received && claim.handedOver) {
+          db.collection('cases').doc(String(claim.caseId)).update({ status: 'resolved' })
+            .then(() => alert("Handover complete! Secure chat destroyed and item has been officially resolved."));
+        }
+      }, 500);
+    }
+
+    // --- Account Modal Logic ---
+    document.getElementById('account-btn').addEventListener('click', () => {
+      document.getElementById('profile-username-tag').textContent = currentUser;
+      const list = document.getElementById('activities-list');
+      list.innerHTML = '';
+
+      const myCases = cases.filter(c => c.ownerId === currentUser);
+      if (myCases.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted); font-style: italic; text-align: center; padding: 1rem;">No reports submitted yet.</p>';
+      } else {
+        myCases.forEach(c => {
+          const act = document.createElement('div');
+          act.style.padding = '0.8rem';
+          act.style.background = 'rgba(0,0,0,0.02)';
+          act.style.border = '1px solid var(--card-border)';
+          act.style.borderRadius = '6px';
+          act.style.color = 'var(--text-main)';
+          const isLost = c.type === 'lost';
+          act.innerHTML = `
+            <div style="font-weight: bold; color: ${isLost ? '#db6a6a' : '#6eb571'}; font-size: 0.8rem; text-transform: uppercase;">${isLost ? 'Reported Lost' : 'Reported Found'} (${c.status})</div>
+            <div style="font-size: 1.1rem; margin: 0.2rem 0;">${c.name}</div>
+            <div style="color: var(--text-muted); font-size: 0.85rem;">📍 ${c.place} <span style="float:right;">${c.dateAdded}</span></div>
+          `;
+          list.appendChild(act);
+        });
+      }
+      openModal('account-modal');
+    });
+
+    // --- Main Rendering Logic ---
+    window.renderFeed = function (filter = 'all') {
+      grid.innerHTML = '';
+
+      const activeCases = cases.filter(c => c.status !== 'resolved');
+      const filtered = activeCases.filter(c => filter === 'all' ? true : c.type === filter);
+
+      if (filtered.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+      } else {
+        grid.style.display = 'grid';
+        emptyState.style.display = 'none';
+
+        filtered.forEach(c => {
+
+
+          const isOwner = c.ownerId === currentUser;
+          const badgeClass = c.type === 'lost' ? 'lost' : 'found';
+          const badgeText = c.type === 'lost' ? 'Missing' : 'Located';
+
+          let btnHTML = '';
+          const detailsHTML = isOwner
+            ? `<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                 <button class="card-btn" style="flex: 1; font-size: 0.85rem; padding: 0.4rem; background: rgba(0,0,0,0.05);" onclick="viewFullDetails(${c.id})">🔒 Full Details</button>
+                 <button class="card-btn" style="flex: 1; font-size: 0.85rem; padding: 0.4rem; background: #db6a6a; color: white; border: none;" onclick="deleteCase(${c.id})">🗑️ Delete</button>
+               </div>`
+            : '';
+
+          // Status 'open'
+          if (c.status === 'open') {
+            const existingClaim = claims.find(cl => cl.caseId == c.id && cl.claimantId === currentUser);
+
+            if (isOwner) {
+              btnHTML = `<button class="card-btn" style="opacity:0.5; border-style:dashed;" disabled>Your Case (Waiting)</button>`;
+            } else if (existingClaim) {
+              btnHTML = `<button class="card-btn" style="background:var(--card-bg);" disabled>Verification Pending...</button>`;
+            } else {
+              const btnText = c.type === 'lost' ? 'I Found This' : "That's Mine";
+              btnHTML = `<button class="card-btn" onclick="openVerify(${c.id}, '${c.type}')">${btnText}</button>`;
+            }
+          }
+          // Status 'matched'
+          else if (c.status === 'matched') {
+            const claim = claims.find(cl => cl.id === c.matchedClaimId);
+            if (!claim) return;
+
+            if (!isOwner && claim.claimantId !== currentUser) {
+              btnHTML = `<button class="card-btn" style="background:#ddd;" disabled>Match In Progress</button>`;
+            } else {
+              const userIsLoser = (c.type === 'lost' && isOwner) || (c.type === 'found' && claim.claimantId === currentUser);
+
+              let confirmBtnHTML = '';
+              if (userIsLoser) {
+                if (claim.received) confirmBtnHTML = `<div style="text-align:center; color:#6eb571; font-weight:bold; width:100%; padding:0.5rem;">✅ Acknowledged Received.</div>`;
+                else confirmBtnHTML = `<button class="card-btn" style="background:#6eb571; color:white; border-color:#6eb571;" onclick="confirmReceived(${claim.id})">Confirm Received</button>`;
+              } else {
+                if (claim.handedOver) confirmBtnHTML = `<div style="text-align:center; color:#6eb571; font-weight:bold; width:100%; padding:0.5rem;">✅ Handover Complete.</div>`;
+                else confirmBtnHTML = `<button class="card-btn" style="background:#6eb571; color:white; border-color:#6eb571;" onclick="confirmHandedOver(${claim.id})">Confirm Handed Over</button>`;
+              }
+
+              // Add Secure Chat Button stacked above the Handshake button
+              const chatBtnHTML = `<button class="card-btn" style="background:var(--card-border); color:var(--text-main); border:none; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="openChat(${claim.id})">💬 Open Secure Chat</button>`;
+              btnHTML = `<div style="display:flex; flex-direction:column; gap:0.25rem;">${chatBtnHTML}${confirmBtnHTML}</div>`;
+            }
+          }
+
+          const cardHTML = `
+            <article class="item-card ${c.type}-item" style="display: flex; flex-direction: column;">
+              <div class="status-badge ${badgeClass}">${badgeText}</div>
+              <h3 style="margin-bottom: 0.8rem; padding-right: 5rem;">${c.name}</h3>
+              <p class="location" style="margin-bottom: 0;">📍 ${c.place}</p>
+              ${detailsHTML}
+              <div style="margin-top: auto; padding-top: 1.5rem;">
+                ${btnHTML}
+              </div>
+            </article>
+          `;
+          grid.insertAdjacentHTML('beforeend', cardHTML);
+        });
+      }
+
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+        const textLower = tab.innerText.toLowerCase();
+        if ((filter === 'all' && textLower.includes('all')) || textLower.includes(filter)) {
+          tab.classList.add('active');
+        }
+      });
+    }
+
+    // Initialize Cloud Sync (Moved to bottom to ensure functions are defined)
+    function initializeSync() {
+      const statusEl = document.getElementById('cloud-status');
+      console.log("📡 Initializing Realtime Cloud Sync...");
+
+      db.collection("cases").onSnapshot((snapshot) => {
+        statusEl.innerHTML = `<div style="width: 8px; height: 8px; border-radius: 50%; background: #6eb571; border: 1px solid rgba(0,0,0,0.1);"></div> Cloud: Online`;
+        let newCases = [];
+        snapshot.forEach(doc => newCases.push(doc.data()));
+        cases = newCases.sort((a, b) => b.id - a.id);
+        renderFeed('all');
+        updateNotificationBar();
+      }, (err) => {
+        console.error("❌ Cases Sync Error:", err);
+        statusEl.innerHTML = `<div style="width: 8px; height: 8px; border-radius: 50%; background: #db6a6a; border: 1px solid rgba(0,0,0,0.1);"></div> Cloud: Error`;
+        if (err.code === 'permission-denied') {
+          alert("🔒 Firebase Permission Error! Please check your Firestore Rules.");
+        }
+      });
+
+      db.collection("claims").onSnapshot((snapshot) => {
+        let newClaims = [];
+        snapshot.forEach(doc => newClaims.push(doc.data()));
+        claims = newClaims.sort((a, b) => b.id - a.id);
+        renderFeed('all');
+        updateNotificationBar();
+        if (document.getElementById('notif-modal').classList.contains('show-modal')) {
+          openNotifModal();
+        }
+      }, (err) => console.error("❌ Claims Sync Over:", err));
+
+      db.collection("chats").onSnapshot((snapshot) => {
+        let newChats = [];
+        snapshot.forEach(doc => newChats.push(doc.data()));
+        chats = newChats.sort((a, b) => a.id - b.id);
+        const activeClaimId = document.getElementById('c-claimId')?.value;
+        if (document.getElementById('chat-modal').classList.contains('show-modal') && activeClaimId) {
+          renderChatBox(activeClaimId);
+        } else {
+          updateNotificationBar();
+        }
+      }, (err) => console.error("❌ Chats Sync Error:", err));
+    }
+
+    // Initialize application
+    initializeSync();
+    renderFeed('all');
+    updateNotificationBar();
+    document.body.classList.add('page-entering');
+
+    // Background Stickers
+    const emojis = ["🔎", "🕵️", "👣", "📜", "🗺️", "💼", "🕰️", "🗝️"];
+    const container = document.getElementById("stickers-container");
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 20; i++) {
+      const el = document.createElement("div");
+      el.classList.add("sticker");
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = `${Math.random() * 100}vw`;
+      el.style.top = `${Math.random() * 100}vh`;
+      const dur = 50 + Math.random() * 40;
+      const delay = -1 * (Math.random() * 40);
+      el.style.animation = `drift ${dur}s ease-in-out ${delay}s infinite alternate`;
+      const scale = 0.5 + Math.random() * 1;
+      el.style.setProperty('--scale-val', scale);
+      el.style.transform = `scale(${scale})`;
+      el.style.opacity = 0.03 + Math.random() * 0.05;
+      fragment.appendChild(el);
+    }
+    container.appendChild(fragment);
+  </script>
+</body>
+
+</html>

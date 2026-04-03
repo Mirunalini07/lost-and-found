@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lost & Found</title>
+  <!-- SEO Best Practices -->
+  <meta name="description" content="Lost & Found - Investigate and solve the mystery. Login to track your lost items.">
+
+  <!-- Font: Special Elite for a unique detective typewriter feel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Container for the background moving stickers -->
+  <!-- Unique ID for browser testing / automation -->
+  <div id="stickers-container" aria-hidden="true"></div>
+
+  <!-- Overlay noise for a subtle textured vintage paper feel -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- Main content wrapper -->
+  <main class="content-wrapper">
+    <div class="glass-card">
+      <div class="card-inner">
+        <h1 class="main-heading">Lost & Found</h1>
+        <p class="sub-heading">Every lost thing deserves to be found, someday.</p>
+        <button id="login-action-btn" class="login-btn" aria-label="Login to Investigate">
+          <span class="btn-text">Login to Investigate</span>
+          <span class="btn-icon">🕵️ </span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Set up dynamically floating background stickers
+    const emojis = ["🔎", "🕵️", "👣", "📜", "🗺️", "💼", "🕰️", "🗝️"];
+    const container = document.getElementById("stickers-container");
+    const SWARM_SIZE = 40;
+
+    // Create stickers with randomized properties
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < SWARM_SIZE; i++) {
+      const el = document.createElement("div");
+      el.classList.add("sticker");
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+      // Randomize initial position
+      el.style.left = `${Math.random() * 100}vw`;
+      el.style.top = `${Math.random() * 100}vh`;
+
+      // Randomize animation duration and delay
+      const dur = 40 + Math.random() * 40; // 40-80s for very slow, subtle drift
+      const delay = -1 * (Math.random() * 40); // Random offset start
+
+      // We will define complex custom properties for CSS drift mapping if we want,
+      // but applying the animation directly is easiest:
+      el.style.animation = `drift ${dur}s ease-in-out ${delay}s infinite alternate`;
+
+      // Random size and subtle opacity
+      // Adjust size for visual hierarchy
+      const scale = 0.5 + Math.random() * 1.5;
+
+      el.style.setProperty('--scale-val', scale);
+      // Starting style
+      el.style.transform = `scale(${scale})`;
+      el.style.opacity = 0.05 + Math.random() * 0.1; // Very subtle (0.05 - 0.15)
+
+      fragment.appendChild(el);
+    }
+
+    container.appendChild(fragment);
+
+    // Page Transition Logic
+    document.getElementById('login-action-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.body.classList.add('page-exiting');
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 450); // Redirect just before 500ms exit animation finishes
+    });
+  </script>
+
+  <!-- Firebase Database Hub -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2eR0yHrUwSmBJzimDyTb-_464_v-A1No",
+      authDomain: "lost-n-found-89160.firebaseapp.com",
+      projectId: "lost-n-found-89160",
+      storageBucket: "lost-n-found-89160.firebasestorage.app",
+      messagingSenderId: "604851619255",
+      appId: "1:604851619255:web:b27e197e9bd62a63761432",
+      measurementId: "G-LF8535CS30"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const form = document.getElementById("lostForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const itemName = document.getElementById("itemName").value;
+      const location = document.getElementById("location").value;
+
+      db.collection("lost_items").add({
+        name: itemName,
+        location: location,
+        time: new Date()
+      })
+        .then(() => {
+          alert("Item added successfully!");
+          form.reset();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+  </script>
+</body>
+
+</html>

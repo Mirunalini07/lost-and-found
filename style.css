@@ -1,0 +1,688 @@
+/* Resets and variable definitions */
+:root {
+  --bg-color-top: #fcf9f2;
+  --bg-color-bottom: #f0e6d3;
+  --text-main: #544b3c;
+  --text-muted: #857861;
+  --accent: #8b6e3f;
+  --card-bg: rgba(255, 255, 255, 0.65);
+  --card-border: rgba(139, 110, 63, 0.15);
+  --btn-hover: #40382d;
+}
+
+/* Dark Theme Overrides */
+body.dark-theme {
+  --bg-color-top: #a19482;
+  --bg-color-bottom: #7d7262;
+  --text-main: #ffffff;
+  --text-muted: #e6dfd3;
+  --card-bg: rgba(255, 255, 255, 0.12);
+  --card-border: rgba(255, 255, 255, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Special Elite', monospace;
+  background: linear-gradient(135deg, var(--bg-color-top) 0%, var(--bg-color-bottom) 100%);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow: hidden;
+  /* Hide overflow from drifting stickers */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subtle grain overlay for a vintage paper feel */
+.noise-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Let clicks pass through */
+  /* SVG embedded noise filter */
+  background-image: url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.85\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E');
+  opacity: 0.12;
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+/* Stickers Background Container */
+#stickers-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Base style for individual floating sticker elements */
+.sticker {
+  position: absolute;
+  font-size: 2.5rem;
+  user-select: none;
+  /* The drift animation is applied via inline JS styles, 
+     but we define the keyframes here */
+}
+
+/* Smooth continuous drift for stickers */
+@keyframes drift {
+  0% {
+    transform: scale(var(--scale-val)) translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: scale(var(--scale-val)) translate(15vw, -10vh) rotate(30deg);
+  }
+
+  50% {
+    transform: scale(var(--scale-val)) translate(30vw, 5vh) rotate(60deg);
+  }
+
+  75% {
+    transform: scale(var(--scale-val)) translate(10vw, 20vh) rotate(15deg);
+  }
+
+  100% {
+    transform: scale(var(--scale-val)) translate(0, 0) rotate(0deg);
+  }
+}
+
+/* Main Content Layer */
+.content-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 1rem;
+  /* Add entrance animation for smooth loading */
+  animation: page-enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Central glassmorphism detective case card */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  padding: 2.5rem 3rem;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 40px rgba(54, 46, 33, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Interactive hover to make card feel alive */
+.glass-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 18px 50px rgba(54, 46, 33, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.main-heading {
+  font-size: 3rem;
+  font-weight: 400;
+  letter-spacing: -1px;
+  margin-bottom: 0.5rem;
+  /* Vintage ink text gradient */
+  background: linear-gradient(180deg, var(--text-main) 0%, var(--btn-hover) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.sub-heading {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  letter-spacing: 0.5px;
+}
+
+/* Elegant micro-animated button */
+.login-btn {
+  background: transparent;
+  border: 2px solid var(--text-main);
+  border-radius: 8px;
+  padding: 0.85rem 2.5rem;
+  font-family: inherit;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Background fill on hover (ink spreading effect) */
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--text-main);
+  z-index: -1;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-btn:hover {
+  color: var(--bg-color-top);
+  border-color: var(--text-main);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.login-btn:hover::before {
+  transform: scaleY(1);
+}
+
+.btn-icon {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Magnifying glass or detective jumps happily */
+.login-btn:hover .btn-icon {
+  transform: scale(1.3) rotate(-15deg);
+}
+
+/* Responsive considerations */
+@media (max-width: 600px) {
+  .glass-card {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .main-heading {
+    font-size: 3.2rem;
+  }
+
+  .sub-heading {
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+  }
+}
+
+/* --- Form Styles --- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 1rem;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+.input-group input {
+  font-family: inherit;
+  font-size: 1.1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+body:not(.dark-theme) .input-group input {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.input-group input:focus {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 1px var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.error-msg {
+  color: #e57373;
+  font-size: 0.95rem;
+  text-align: center;
+  min-height: 1.2rem;
+  transition: opacity 0.3s;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.forgot-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+}
+
+.forgot-link:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+}
+
+.action-btn {
+  width: 100%;
+}
+
+/* Page Transition Animations */
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes page-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+    filter: blur(8px);
+  }
+}
+
+/* Applied dynamically via JS on exit */
+body.page-exiting .content-wrapper {
+  animation: page-exit 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+body.page-exiting #stickers-container,
+body.page-exiting .noise-overlay {
+  transition: opacity 0.5s ease;
+  opacity: 0;
+}
+
+/* --- Dashboard Specific Styles --- */
+.dashboard-body {
+  display: block; /* Override default flex center */
+  overflow-y: auto; /* Allow scrolling for feed */
+  padding-bottom: 3rem;
+}
+
+.dashboard-body.page-entering {
+  animation: page-enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.dash-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 1rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.dash-header .brand {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  width: 450px;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.search-bar:focus-within {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: var(--text-main);
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  color: var(--text-main);
+  outline: none;
+}
+
+.user-actions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.small-btn {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  color: var(--text-main);
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.dash-main {
+  max-width: 1100px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--card-border);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.filters {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.filter-tab {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.filter-tab.active, .filter-tab:hover {
+  background: var(--text-main);
+  color: var(--bg-color-top);
+  border-color: var(--text-main);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.item-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.8rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.lost {
+  background: #db6a6a;
+  color: white;
+}
+
+.status-badge.found {
+  background: #6eb571;
+  color: white;
+}
+
+.item-card h3 {
+  margin-right: 5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+  color: var(--text-main);
+}
+
+.item-card .location {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.item-card .desc {
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  flex-grow: 1; /* Pushes button to bottom */
+}
+
+.card-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.card-btn:hover {
+  background: var(--text-main);
+  color: var(--bg-color-top);
+  border-color: var(--text-main);
+}
+
+/* Form Modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show-modal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  /* Cancel hover effect from glass-card base */
+  transform: none !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: transform 0.2s;
+}
+
+.close-btn:hover {
+  transform: scale(1.2);
+}
+
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.input-group textarea {
+  font-family: inherit;
+  font-size: 1.1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(0,0,0, 0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  color: var(--text-main);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+.input-group textarea:focus {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 1px var(--text-main);
+  background: rgba(255,255,255, 0.1);
+}
+
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+  .dash-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .search-bar {
+    width: 100%;
+  }
+}
+
+/* Dropdown specific */
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 0.3s, transform 0.3s;
+  min-width: 160px;
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 1.05rem;
+  padding: 0.8rem 1.2rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
